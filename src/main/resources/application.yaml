@@ -1,0 +1,10 @@
+ktor:
+  deployment:
+    port: 8080
+  application:
+    modules:
+      - com.biodex.HttpKt.configureHttp
+      - com.biodex.SerializationKt.configureSerialization
+      - com.biodex.SecurityKt.configureSecurity
+      - com.biodex.ResourcesKt.configureResources
+      - com.biodex.RoutingKt.configureRouting

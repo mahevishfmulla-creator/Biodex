@@ -1,0 +1,78 @@
+-- Core species catalog
+CREATE TABLE species (
+    id VARCHAR(50) PRIMARY KEY,
+    common_name VARCHAR(100) NOT NULL,
+    scientific_name VARCHAR(100) NOT NULL,
+    habitat VARCHAR(50) NOT NULL,
+    location_summary VARCHAR(150),
+    description TEXT,
+    length_cm VARCHAR(20),
+    weight_kg VARCHAR(20),
+    lifespan_years VARCHAR(20),
+    iucn_status VARCHAR(5) NOT NULL,
+    icon_emoji VARCHAR(10) DEFAULT '🐾',
+    fasta_sequence TEXT
+);
+
+-- Taxonomy details per species
+CREATE TABLE taxonomy (
+    species_id VARCHAR(50) PRIMARY KEY REFERENCES species(id) ON DELETE CASCADE,
+    kingdom VARCHAR(50) NOT NULL,
+    phylum VARCHAR(50) NOT NULL,
+    class_name VARCHAR(50) NOT NULL,
+    order_name VARCHAR(50) NOT NULL,
+    family VARCHAR(50) NOT NULL,
+    genus VARCHAR(50) NOT NULL
+);
+
+-- Island decoration catalog
+CREATE TABLE island_items (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    rarity VARCHAR(5) NOT NULL,
+    sprite_emoji VARCHAR(10) NOT NULL
+);
+
+-- Per-user island state
+CREATE TABLE user_island (
+    user_id VARCHAR(50) PRIMARY KEY,
+    island_level INT DEFAULT 1,
+    current_exp INT DEFAULT 0,
+    placed_items JSONB DEFAULT '[]'::jsonb,
+    unlocked_inventory JSONB DEFAULT '[]'::jsonb
+);
+
+-- Quiz spaced-repetition state (Account 11)
+CREATE TABLE quiz_review_state (
+    user_id VARCHAR(50) NOT NULL,
+    species_id VARCHAR(50) NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+    repetition_count INT DEFAULT 0,
+    ease_factor DOUBLE PRECISION DEFAULT 2.5,
+    interval_days INT DEFAULT 0,
+    mastery_percent INT DEFAULT 0,
+    streak_count INT DEFAULT 0,
+    next_review_due TIMESTAMPTZ DEFAULT NOW(),
+    last_reviewed_at TIMESTAMPTZ,
+    PRIMARY KEY (user_id, species_id)
+);
+
+-- Which species a user has captured (Account 11)
+CREATE TABLE user_captures (
+    user_id VARCHAR(50) NOT NULL,
+    species_id VARCHAR(50) NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+    captured_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, species_id)
+);
+
+-- Seed data: a few starter species
+INSERT INTO species (id, common_name, scientific_name, habitat, location_summary, description, length_cm, weight_kg, lifespan_years, iucn_status, icon_emoji, fasta_sequence) VALUES
+('clouded-leopard', 'Clouded Leopard', 'Neofelis nebulosa', 'RAINFOREST', 'Southeast Asia', 'A medium-sized wild cat known for its distinctive cloud-like coat markings.', '70-110', '11-23', '11', 'VU', '🐆', 'ATGCGATCGATCGATCGATCGATGCTAGCTAGCTAGCTAGCTAGCATCGATCG'),
+('amami-rabbit', 'Amami Rabbit', 'Pentalagus furnessi', 'FOREST', 'Amami Ōshima and Tokunoshima, Japan', 'A primitive rabbit species found only on two small Japanese islands.', '43-51', '2-2.5', '8', 'EN', '🐇', 'ATGCGATCGTTCGATCGATCTATGCTAGCTTGCTAGCTAGCATCGATCGTTA'),
+('axolotl', 'Axolotl', 'Ambystoma mexicanum', 'WETLAND', 'Lake Xochimilco, Mexico', 'A neotenic salamander capable of regenerating lost limbs.', '15-45', '0.06-0.2', '10-15', 'CR', '🦎', 'ATGCGATTCGATCGATCGATGCTAGCATGCTAGCTAGCTAGCATCGATCGATT');
+
+-- Seed data: a few island decor items
+INSERT INTO island_items (id, name, rarity, sprite_emoji) VALUES
+('flower_wild', 'Wildflower', 'LC', '🌼'),
+('flower_orchid', 'Bioluminescent Orchid', 'VU', '🌺'),
+('statue_clouded_leopard', 'Clouded Leopard Statue', 'VU', '🗿'),
+('statue_amami_rabbit', 'Amami Rabbit
