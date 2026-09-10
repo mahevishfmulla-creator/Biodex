@@ -4,10 +4,8 @@ import com.biodex.server.quiz.ExposedSpeciesDataSource
 import com.biodex.server.quiz.GeneratedQuestion
 import com.biodex.server.quiz.QuestionGenerationException
 import com.biodex.server.quiz.QuestionGenerator
-import com.biodex.server.quiz.ReviewCardState
 import com.biodex.server.quiz.SpacedRepetitionEngine
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
@@ -32,13 +30,6 @@ data class NextQuestionResponse(
     val totalDueToday: Int,
 )
 
-@Serializable
-data class AnswerRequest(
-    val questionId: String,
-    val speciesId: String,
-    val selectedOptionIndex: Int,
-    val timeTakenSeconds: Double
-)
 
 @Serializable
 data class AnswerResponse(
@@ -50,7 +41,7 @@ data class AnswerResponse(
     val newMasteryPercent: Int,
     val nextReviewDays: Int,
     val updatedStreak: Int,
-    val levelUp: Boolean
+    val levelUp: Boolean,
 )
 
 @Serializable
@@ -60,7 +51,7 @@ data class QuizStatsResponse(
     val totalCardsTracked: Int,
     val cardsMastered: Int,
     val cardsLearning: Int,
-    val currentStreak: Int
+    val currentStreak: Int,
 )
 
 // @Serializable
@@ -136,7 +127,7 @@ fun Route.quizRoutes(questionGenerator: QuestionGenerator, dataSource: ExposedSp
                 val isBlank = request.selectedOptionIndex < 0
                 val isCorrect = !isBlank && (request.selectedOptionIndex == question.correctAnswerIndex)
                 val wasClose = !isBlank && !isCorrect &&
-                        kotlin.math.abs(request.selectedOptionIndex - question.correctAnswerIndex) == 1
+                        (kotlin.math.abs(request.selectedOptionIndex - question.correctAnswerIndex) == 1)
 
                 val quality = SpacedRepetitionEngine.deriveQuality(
                     isCorrect = isCorrect,
